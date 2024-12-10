@@ -1,0 +1,20 @@
+# Python version 3.9 install from docker.
+FROM python:3.9
+
+# Work dirictory will be at "/backend" in the container.
+WORKDIR /backend
+
+# Copy local file "requirments.txt" to the image.
+COPY requirements.txt /backend/
+
+# Run the command to install the requirements while building image.
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy local file "app.py" to the image.
+COPY app.py /backend
+
+# The port will be open in container is port 5000.
+EXPOSE 5000
+
+# Run the "python app.py" command while container is open.
+CMD ["python","app.py"]

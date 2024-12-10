@@ -1,0 +1,52 @@
+version: '3.9' # Docker Compose document version 3.9.
+
+services: # Define different servic like backend, frontend.
+  # Service name "db".
+  db:
+    # Using mariadb 10.5 is because latest mysql use utf8mb4_0900_ai_ci
+    # is incompatible with the mysql-connector-python.
+    image: mariadb:10.5 # It will download the image from docker.
+
+    container_name: hw_mariadb # container name will be "hw_mariadb".
+    restart: always # Prevent mariadb shutdown for unknown reason.
+
+    # Setup the sql database root and user infomation.
+    environment:
+      MYSQL_ROOT_PASSWORD: nycuai # Root user password.
+      MYSQL_DATABASE: hw_database # Database name.
+      MYSQL_USER: kuo # Define user "kuo".
+      MYSQL_PASSWORD: 313831005 # Password for "kuo".
+
+    volumes: # Volumes setting.
+      - db_data:/var/lib/mysql # db_data is the named volumes where database will be allocate.
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Init the database table.
+    ports: # Ports mapping between local and container.
+      - "3306:3306" # Expose port in local will be 3306, in the container will be 3306.
+
+  # Service name "backend".
+  backend:
+    build: # Dockerfile build information.
+      context: ./backend # The path to backend dockerfile.
+      dockerfile: backend_dockerfile # Custom dockerfile name.
+    volumes: # Volumes setting.
+      - ./backend:/backend # "./backend" is the flask app location in local. Container will keep it in the path "/backend".
+    ports: # Ports mapping between local and container.
+      - "5000:5000" # Expose port in local will be port 5000, in the container will be port 5000.
+    depends_on: # Servic depends on.
+      - db # Wait until the database is on.
+
+  # Service name "frontend".
+  frontend:
+    build: # Dockerfile build information.
+      context: ./frontend # The path to frontend dockerfile.
+      dockerfile: frontend_dockerfile # Custom dockerfile name.
+    volumes: # Volumes setting.
+      - ./frontend/site:/frontend # Put the local website to the container path "/frontend".
+    ports: # Ports mapping between local and container.
+      - "8000:8001" # Expose port in local will be 0000, in the container will be 8001.
+    depends_on: # Servic depends on.
+      - backend # Wait until the flask app is on.
+
+# The volumes use for database.
+volumes:
+  db_data: {} # The volume name will be db_data and it will be default volume.

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Auction Page</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4">Seller Auction Page</h1>
+
+        <!-- Back to Home Button -->
+        <button id="backToHomeButton" class="btn btn-secondary mb-4">Back to Home</button>
+
+        <!-- Form to create auction item -->
+        <h2>Create Auction Item</h2>
+        <form id="auctionForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="region">Region:</label>
+                <input type="text" class="form-control" id="region" name="region" required>
+            </div>
+            <div class="form-group">
+                <label for="author">Author:</label>
+                <input type="text" class="form-control" id="author" name="author" required>
+            </div>
+            <div class="form-group">
+                <label for="name">Name of the item:</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="material">Material:</label>
+                <input type="text" class="form-control" id="material" name="material" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time_of_work">Time of work:</label>
+                <input type="text" class="form-control" id="time_of_work" name="time_of_work" required>
+            </div>
+
+            <div class="form-group">
+                <label for="source">Source (e.g. previous owner):</label>
+                <input type="text" class="form-control" id="source" name="source" required>
+            </div>
+
+            <div class="form-group">
+                <label for="price">Price you get:</label>
+                <input type="text" class="form-control" id="price" name="price" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Item Description:</label>
+                <textarea class="form-control" id="description" name="description"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="item_image">Item Image:</label>
+                <input type="file" class="form-control" id="item_image" name="item_image" accept="image/*" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create Auction Item</button>
+        </form>
+
+        <!-- Display auction item list -->
+        <h2 class="mt-4">My Auction Items</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Item Image</th>
+                    <th>Evaluate Price</th>
+                    <th>Evaluate Status</th>
+                </tr>
+            </thead>
+            <tbody id="auctionItemList">
+                <!-- Auction items will be displayed here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script type="module">
+        import {getApiCookie} from "./cookies.js";
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');  // Replace with the actual buyer ID
+        
+        $(document).ready(function() {
+            // Handle form submission for creating auction item
+            $('#auctionForm').submit(function(event) {
+                event.preventDefault();
+                $.ajax({
+                    url: `${getApiCookie()}/evlAuctionItem`,  // Replace with the actual backend API URL
+                    type: 'POST',
+                    data: {
+                        region: $('#region').val(),
+                        author: $('#author').val(),
+                        name: $('#name').val(),
+                        material: $('#material').val(),
+                        time_of_work: $('#time_of_work').val(),
+                        source: $('#source').val(),
+                        price: $('#price').val(),
+                        description: $('#description').val(),
+                        member_id: id
+                    },
+                    success: function(response) {
+                        alert('Auction item created successfully');
+                        // Reload the auction item list
+                        loadAuctionItems();
+                    },
+                    error: function() {
+                        alert('System error, please try again later');
+                    }
+                });
+            });
+
+            // Load auction items created by the seller
+            function loadAuctionItems() {
+                $.ajax({
+                    url: `${getApiCookie}/getSellerEvlItems`,  // Replace with the actual backend API URL
+                    type: 'POST',
+                    data:{
+                        id:id
+                    },
+                    success: function(response) {
+                        let itemListHtml = '';
+                        response.forEach(function(item) {
+                            itemListHtml += `
+                                <tr>
+                                    <td>${item.name}</td>
+                                    <td>
+                                        <img src="" alt="Item Image" style="width: 100px; height: auto;">
+                                    </td>
+                                    <td>${item.evaluate_price || 'No yet'}</td>
+                                    <td>${item.evaluate_status|| 'No yet'}</td>
+                                </tr>
+                            `;
+                        });
+                        $('#auctionItemList').html(itemListHtml);
+                    },
+                    error: function() {
+                        // alert('Failed to load auction item list');
+                    }
+                });
+            }
+
+            // Initially load auction items
+            loadAuctionItems();
+
+            // Back to Home button action
+            $('#backToHomeButton').click(function() {
+                window.location.href = `home.html?id=${id}`; // Redirect to home page
+            });
+        });
+    </script>
+</body>
+</html>

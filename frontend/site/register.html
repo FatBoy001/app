@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Auction System - Register</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .register-container {
+            max-width: 450px;
+            margin: 80px auto;
+            padding: 20px;
+            background: #ffffff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .register-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .back-to-login {
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Create an Account</h2>
+        
+        <!-- Registration Form -->
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number:</label>
+                <input type="tel" class="form-control" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password:</label>
+                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Register</button>
+        </form>
+        
+        <!-- Back to Login -->
+        <div class="back-to-login">
+            <p>Already have an account? <a href="login.html">Back to Login</a></p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script type="module">
+        import {getApiCookie} from "./cookies.js";
+        $(document).ready(function() {
+            $('#registerForm').submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
+                
+                const password = $('#password').val();
+                const confirmPassword = $('#confirmPassword').val();
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match!');
+                    return;
+                }
+                
+                //const actionUrl = 'http://127.0.0.1:5000/register'; // Backend endpoint for registration
+                const actionUrl = `${getApiCookie()}/register`;
+                $.ajax({
+                    url: actionUrl,
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        console.log(response);
+                        if (response.success) {
+                            alert('Registration successful!');
+                            window.location.href = 'login.html'; // Redirect to login page
+                        } else {
+                            alert('Registration failed: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Error occurred during registration. Please try again.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

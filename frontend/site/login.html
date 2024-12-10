@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Auction System - Login</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            background: #ffffff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Art Auction System</h2>
+        
+        <!-- Login Form -->
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+        
+        <!-- Register Button -->
+        <div class="register-link">
+            <p>Don't have an account? <a href="register.html">Register here</a></p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script type="module">
+        import {getApiCookie,setApiCookie} from "./cookies.js";
+        const fetchData =(infoUrl)=>fetch(infoUrl)
+            .then(response => {
+                if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(data => setApiCookie(data))
+            .catch(error => {
+                console.error('Error fetching text:', error.message || error);
+            });
+        
+        const login = (auctionUrl)=>$.ajax({
+            url: `${auctionUrl}/login`,
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                console.log(response)
+                if (response.success) {
+                    alert('Login successful!');
+                    window.location.href = `home.html?id=${response.id}`; // Redirect to the dashboard
+                } else {
+                    alert('Login failed: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('Error occurred during login. Please try again.');
+            }
+        });
+
+        $(document).ready(function() {
+            $('#loginForm').submit(function(event) {
+                event.preventDefault();
+                const infoUrl = 'http://211.72.142.50:8000/url.txt';
+                fetchData(infoUrl);
+            });
+        });
+    </script>
+</body>
+</html>

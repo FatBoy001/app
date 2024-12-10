@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Bidding</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h2 class="mt-5">Auction Item for Bidding</h2>
+
+        <div id="auctionItem">
+            <!-- The auction item will be dynamically populated here -->
+        </div>
+
+        <h2 class="mt-5">Your Bids</h2>
+        <div id="yourBidsList">
+            <!-- User's bids will be dynamically populated here -->
+        </div>
+
+        <button class="btn btn-secondary mt-3" id="backToHomeButton">Back to Home</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script type="module">
+        import {getApiCookie} from "./cookies.js";
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const buyerId = urlParams.get('id');  // Replace with the actual buyer ID
+        
+        function renderBids(bids) {
+            const bidsList = $('#yourBidsList'); // 獲取目標容器
+            bidsList.empty(); // 清空容器內容
+            // 檢查是否有出價數據
+            if (bids.length === 0) {
+                bidsList.append('<p>No bids found.</p>'); // 如果沒有出價
+                return;
+            }
+
+            // 遍歷每一筆出價並渲染到容器
+            bids.reverse().forEach(bid => {
+                const bidHTML = `
+                    <div class="bid-item">
+                        <h4>${bid.item_name}</h4>
+                        <p>Bid Price: $${bid.price}</p>
+                        <p>Bid At: ${bid.update_time}</p>
+                    </div>
+                `;
+                bidsList.append(bidHTML); // 動態插入 HTML
+            });
+        }
+
+        $(document).ready(function() {
+            // 取得auction items
+            $.ajax({
+                url: `${getApiCookie()}/getAuctionItems`, // 後端 API 路徑
+                type: 'GET',
+                success: function(data) {
+                    console.log(data); // 確認接收到的資料
+                    renderAuctionItems(data[0]); // 調用函數將資料顯示在頁面上
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching auction items:', error);
+                }
+            });
+            
+            // 搜尋出價
+            $.ajax({
+                url: `${url}//getUserBids`, // 替換為你的 API 路徑
+                type: 'POST',
+                data: {
+                        buyer_id: buyerId
+                },
+                success: function(response) {
+                    // 
+                    renderBids(response); // 將數據渲染到頁面
+                },
+                error: function() {
+                    console.error('Error fetching user bids');
+                }
+            });
+
+            // Handle bidding
+            $(document).on('submit', '.bidForm', function(event) {
+                event.preventDefault();
+
+                const itemId = $(this).data('item-id');                
+                const bidPrice = $(this).find('input[name="bid_price"]').val();
+
+                $.ajax({
+                    url: `${url}/bid`,  // Change to your API endpoint
+                    type: 'POST',
+                    data: {
+                        item_id: itemId,
+                        bid_price: bidPrice,
+                        buyer_id: buyerId
+                    },
+                    success: function(response) {
+                        alert('Bid placed successfully!');
+                        window.location.reload();  // Reload page to show updated prices
+                    },
+                    error: function() {
+                        alert('Error placing bid.');
+                    }
+                });
+            });
+
+            // Handle back to home button
+            $('#backToHomeButton').click(function() {
+                window.location.href = `home.html?id=${buyerId}`;
+            });
+        });
+
+        // Display only the first auction item
+        function renderAuctionItems(itemToDisplay){
+            if (itemToDisplay) {
+            const itemHTML = `
+                <div class="auction-item">
+                    <h4>${itemToDisplay.item_name}</h4>
+                    <img src="${itemToDisplay.image}" alt="${itemToDisplay.item_name}" class="img-fluid">
+                    <p>${itemToDisplay.description}</p>
+                    <p>Starting Price: $${itemToDisplay.starting_price}</p>
+                    <p>Current Price: $${itemToDisplay.current_price}</p>
+                    <p>Auction End Time: ${itemToDisplay.auction_end_time}</p>
+                    <form class="bidForm" data-item-id="${itemToDisplay.id}">
+                        <input type="number" class="form-control" name="bid_price" step="0.01" required>
+                        <button type="submit" class="btn btn-primary mt-2">Place Bid</button>
+                    </form>
+                </div>
+            `;
+            $('#auctionItem').html(itemHTML);
+            } else {
+                $('#auctionItem').html('<p>No auction items are currently active.</p>');
+            }
+        }
+    </script>
+</body>
+</html>

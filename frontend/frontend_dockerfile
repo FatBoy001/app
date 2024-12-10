@@ -1,0 +1,11 @@
+# Python version 3.9 install from docker.
+FROM python:3.9
+
+# Work dirictory will be at "/frontend" in the container.
+WORKDIR /frontend
+
+# The port will be open in container is port 8001.
+EXPOSE 8001
+
+# Run the "python -m http.server 8001" command while container is open.
+CMD ["python","-m","http.server","8001","--bind","0.0.0.0"]
